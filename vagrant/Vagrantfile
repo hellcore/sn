@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure(2) do |config|
+  config.vm.box = "chef/debian-7.8"
+  config.vm.host_name = "dev.sampaiodanovoa.pt"
+  config.vm.box_check_update = true
+
+  if defined? VagrantPlugins::HostManager
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+  end
+
+  config.ssh.forward_agent = true
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "private_network", ip: "172.16.33.112"
+  config.vm.synced_folder "../", "/apps"
+
+  config.vm.provider "virtualbox" do |v|
+     v.name = "dev.sampaiodanova.pt"
+     v.customize ["modifyvm", :id, "--memory", "512"]
+     v.customize ["modifyvm", :id, "--cpus", "1"]
+     v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+     v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+     v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+  end
+
+  config.vm.provision "shell", path: "bootstrap.sh"
+end
